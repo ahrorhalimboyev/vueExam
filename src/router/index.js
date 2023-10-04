@@ -1,25 +1,29 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from "vue-router";
+import auth from "./auth";
+import admin from "./admin";
+import superadmin from "./superadmin";
+import not_found from "./not_found";
 
-const routes = [
-  {
-    path: '/',
-    name: 'home',
-    component: HomeView
-  },
-  {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue')
-  }
-]
+const routes = [auth, admin, superadmin, not_found];
 
 const router = createRouter({
-  history: createWebHashHistory(),
-  routes
-})
+  history: createWebHistory(),
+  routes,
+});
 
-export default router
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem("token");
+  const role = localStorage.getItem("roles");
+  const name = to.name === "auth";
+  if (!token && !name) {
+    return next({ name: "auth" });
+  } else {
+    if (token && role) {
+      return next();
+    } else {
+      next();
+    }
+  }
+});
+
+export default router;
